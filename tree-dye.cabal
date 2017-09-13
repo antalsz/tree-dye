@@ -1,0 +1,54 @@
+name:                tree-dye
+version:             0.0.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/antalsz/tree-dye#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Antal Spector-Zabusky
+maintainer:          antal.b.sz@gmail.com
+copyright:           Copyright © 2017 Antal Spector-Zabusky
+category:            Graphics
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/antalsz/tie-dye
+
+library
+  exposed-modules:     TreeDye.CLI
+                     , TreeDye.Output.Distances
+                     , TreeDye.Tree.RandomSpanningTree
+                     , TreeDye.Graph.Interface
+                     , TreeDye.Graph.AdjacencyMap
+                     , TreeDye.Graph.Grid
+                     , TreeDye.Pick
+                     , TreeDye.Util.Function
+                     , TreeDye.Util.List
+  
+  other-extensions:    TypeFamilies, FlexibleContexts, ScopedTypeVariables
+                     , TypeApplications
+                     , ViewPatterns, RecordWildCards, TupleSections
+                     , LambdaCase
+                     , StandaloneDeriving, GeneralizedNewtypeDeriving
+  
+  -- Warnings: bounds are PVP-conformant guesses based on what's on my system
+  build-depends:       base        == 4.9.*
+                     , array       == 0.5.*
+                     , containers  == 0.5.*
+                     , MonadRandom == 0.5.*
+                     , colour      == 2.3.*
+                     , JuicyPixels == 3.2.*
+
+  hs-source-dirs:      src/lib
+  default-language:    Haskell2010
+  ghc-options:         -Wall -fno-warn-name-shadowing -O2
+
+executable tree-dye
+  main-is:             Main.hs
+  build-depends:       base == 4.9.*, tree-dye
+  hs-source-dirs:      src/exe
+  default-language:    Haskell2010
+  ghc-options:         -Wall -fno-warn-name-shadowing -O2
