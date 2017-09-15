@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies, ScopedTypeVariables, TypeApplications, BangPatterns,
-             RecordWildCards, LambdaCase #-}
+             RecordWildCards, TupleSections, LambdaCase #-}
 
 module TreeDye.CLI.Parsing (
   -- * Numbers
@@ -9,10 +9,12 @@ module TreeDye.CLI.Parsing (
   number, percentage, numberOrPercentage,
 
   -- * Dimensions
-  dimensionRange,
+  dimension,
+  -- ** Kinds of dimensions
+  dimensionOrRange, squareDimension,
 
   -- * Colors
-  color,
+  color, anyColor,
   -- ** Hex colors
   hexColor, hexColor',
   -- ** Named colors
@@ -28,10 +30,17 @@ module TreeDye.CLI.Parsing (
   -- *** Generic RGB triple parsers
   boundedRGBTriple, rationalRGBTriple,
   boundedRGBTripleValidator, rationalRGBTripleValidator,
+  -- ** Randomization
+  random,
+
+  -- * Utility parsers
+  keywords,
 
   -- * @optparse-applicative@ interoperability
   parsecReader
 ) where
+
+import TreeDye.CLI.Types
 
 import Data.Proxy
 import Data.Void
@@ -61,6 +70,14 @@ import Text.Megaparsec.Char.Lexer (decimal, signed)
 import qualified Options.Applicative as Opt
 
 --------------------------------------------------------------------------------
+-- Utility
+--------------------------------------------------------------------------------
+
+-- If any keyword is a prefix of another keyword, it must come later in the list
+keywords :: (MonadParsec e s m, Tokens s ~ String) => [String] -> m ()
+keywords = void . asum . map string'
+
+--------------------------------------------------------------------------------
 -- Numbers
 --------------------------------------------------------------------------------
 
@@ -88,10 +105,11 @@ number =
       digits f x    = foldl' f x . chunkToTokens (Proxy @s)
                         <$> takeWhile1P (Just "digit") isDigit
       
-      withDigit !n !d = 10*n + fromIntegral (digitToInt d)
+      (!n) `withDigit` (!d) = 10*n + fromIntegral (digitToInt d)
       
-      integer       = digits withDigit (0 :: Natural)
-      fractional !i = digits (\(!n,!e) d -> (withDigit n d, e-1)) (i,0 :: Integer)
+      integer       = digits withDigit 0
+      fractional !i = digits (\(!n,!e) d -> (n `withDigit` d, e-1))
+                             (i,0 :: Integer)
       exp           = option 0 $ char' 'e' *> signed (pure ()) decimal
       
       asRational !base !mag = toRational base * 10^^mag
@@ -126,12 +144,21 @@ numberOrPercentage = do
 -- Dimensions
 --------------------------------------------------------------------------------
 
-dimensionRange :: (MonadParsec e s m, Token s ~ Char) => m (Natural, Natural)
-dimensionRange = do
+dimension :: (MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+          => m Dimension
+dimension =   either FixedDimension (uncurry Range) <$> dimensionOrRange
+          <|> Square <$ squareDimension
+
+dimensionOrRange :: (MonadParsec e s m, Token s ~ Char)
+                 => m (Either Natural (Natural, Natural))
+dimensionOrRange = do
   let natural = fromInteger <$> decimal <* space
   low  <- natural
-  high <- option low $ char '-' *> space *> natural
-  pure $ (low,high)
+  high <- optional $ char '-' *> space *> natural
+  pure $ maybe (Left low) (Right . (low,)) high
+
+squareDimension :: (MonadParsec e s m, Tokens s ~ String) => m ()
+squareDimension = keywords $ words "square sq same x"
 
 --------------------------------------------------------------------------------
 -- Colors
@@ -139,12 +166,22 @@ dimensionRange = do
 
 ---------- Aggregate color parser ----------
 
-color :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
-      => m (Colour c)
-color =   hexColor
-      <|> rgb8 <|> rgb16 <|> rgbPercentage <|> rgbRational
-      <|> rgbGeneric
-      <|> namedColor
+color :: (MonadParsec e s m, Token s ~ Char, Tokens s ~ String) => m Color
+color =   RandomColor <$  random -- Has to come first because of named colors
+      <|> FixedColor  <$> anyColor
+
+anyColor :: ( Ord c, Floating c
+            , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
+         => m (Colour c)
+anyColor =   hexColor
+         <|> rgb8 <|> rgb16 <|> rgbPercentage <|> rgbRational
+         <|> rgbGeneric
+         <|> namedColor
+
+---------- Random color ----------
+
+random :: (MonadParsec e s m, Tokens s ~ String) => m ()
+random = keywords $ words "random rand"
 
 ---------- Hex colors ----------
 
@@ -158,12 +195,14 @@ hexColor' = do
     Just (h4,h5,h6) -> RGB (chan h1 h2) (chan h3 h4) (chan h5 h6)
     Nothing         -> RGB (chan h1 h1) (chan h2 h2) (chan h3 h3)
 
-hexColor :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char) => m (Colour c)
+hexColor :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char)
+         => m (Colour c)
 hexColor = uncurryRGB sRGB24 <$> hexColor'
 
 ---------- Named colors ----------
 
-namedColor :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char) => m (Colour c)
+namedColor :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char)
+           => m (Colour c)
 namedColor =   label "color name"
            $   maybe (fail "unknown color name") pure
            =<< readColourName . map toLower
@@ -231,9 +270,10 @@ boundedRGBTriple :: ( Integral raw
                     , Ord px, Floating px
                     , MonadParsec e s m, Token s ~ Char )
                  => String -> RGBTriple m raw chan (Colour px)
-boundedRGBTriple suff = RGBTriple { rgbtSuffix    = suff
-                                  , rgbtChannel   = decimal
-                                  , rgbtValidator = boundedRGBTripleValidator }
+boundedRGBTriple suff =
+  RGBTriple { rgbtSuffix    = suff
+            , rgbtChannel   = decimal
+            , rgbtValidator = boundedRGBTripleValidator }
 
 rationalRGBTripleValidator :: (Ord c, Floating c)
                            => RGBTripleValidator Rational c (Colour c)
@@ -245,27 +285,33 @@ rationalRGBTripleValidator =
 
 rationalRGBTriple :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char)
                   => String -> m Rational -> RGBTriple m Rational c (Colour c)
-rationalRGBTriple suff chan = RGBTriple { rgbtSuffix    = suff
-                                        , rgbtChannel   = chan
-                                        , rgbtValidator = rationalRGBTripleValidator }
+rationalRGBTriple suff chan =
+  RGBTriple { rgbtSuffix    = suff
+            , rgbtChannel   = chan
+            , rgbtValidator = rationalRGBTripleValidator }
 
-rgb8 :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+rgb8 :: ( Ord c, Floating c
+        , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
      => m (Colour c)
 rgb8 = rgbTriple $ boundedRGBTriple @Natural @Word8 "8"
 
-rgb16 :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+rgb16 :: ( Ord c, Floating c
+         , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
       => m (Colour c)
 rgb16 = rgbTriple $ boundedRGBTriple @Natural @Word16 "16"
 
-rgbPercentage :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+rgbPercentage :: ( Ord c, Floating c
+                 , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
               => m (Colour c)
 rgbPercentage = rgbTriple $ rationalRGBTriple "%" percentage
 
-rgbRational :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+rgbRational :: ( Ord c, Floating c
+               , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
             => m (Colour c)
 rgbRational = rgbTriple $ rationalRGBTriple "f" (numToRational <$> number)
 
-rgbGeneric :: (Ord c, Floating c, MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
+rgbGeneric :: ( Ord c, Floating c
+              , MonadParsec e s m, Token s ~ Char, Tokens s ~ String )
            => m (Colour c)
 rgbGeneric = rawRGBTriple "" numberOrPercentage >>= either fail pure . \case
   (NumNatural r, NumNatural g, NumNatural b) ->

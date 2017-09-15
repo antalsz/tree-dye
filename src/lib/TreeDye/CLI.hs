@@ -5,60 +5,73 @@ module TreeDye.CLI (
   distanceArrayMain,
   -- * Command-line options
   Configuration(..), configurationOptions, helper,
+  -- ** Extra validation
+  validateDimensions,
+  -- ** Default values
+  defaultDimension, defaultColor,
   -- * Main functions' options
   distanceArrayOptions
 ) where
 
+import Data.Either
 import Numeric.Natural
-import Control.Monad.Random
 
 import TreeDye.Tree.RandomSpanningTree
 import TreeDye.Graph.Grid
 import TreeDye.Output.Distances
 
-import Data.Colour
-import Data.Colour.Names
-
 import Codec.Picture
 
+import System.Exit
+
+import TreeDye.CLI.Types
+import TreeDye.Util.String
 import Data.Semigroup ((<>))
 import Options.Applicative hiding (helper)
 import qualified Options.Applicative.Help as H
 import TreeDye.CLI.Parsing
 
 data Configuration =
-  Configuration { configWidthRange  :: (Natural, Natural)
-                , configHeightRange :: (Natural, Natural)
-                , configFromColor   :: Colour Double
-                , configToColor     :: Colour Double
+  Configuration { configWidthRange  :: Dimension
+                , configHeightRange :: Dimension
+                , configFromColor   :: Color
+                , configToColor     :: Color
                 , configOutputFile  :: FilePath }
+
+defaultDimension :: Dimension
+defaultDimension = Range 100 1000
+
+defaultColor :: Color
+defaultColor = RandomColor
 
 configurationOptions :: Parser Configuration
 configurationOptions = Configuration
-  <$> option (parsecReader dimensionRange)
+  <$> option (parsecReader dimension)
       (  long    "width"
       <> short   'w'
-      <> help    "Image width (or range of possible widths)"
+      <> help    "Image width or range of possible widths; \
+                 \can also be `square'"
       <> metavar "INT[-INT]"
-      <> value   (100,1000) )
-  <*> option (parsecReader dimensionRange)
+      <> value   defaultDimension )
+  <*> option (parsecReader dimension)
       (  long    "height"
       <> short   'h'
-      <> help    "Image height (or range of possible heights)"
+      <> help    "Image height or range of possible heights; \
+                 \can also be `square'"
       <> metavar "INT[-INT]"
-      <> value   (100,1000) )
+      <> value   defaultDimension )
   <*> option (parsecReader color)
       (  long    "from"
       <> short   'f'
-      <> help    "Starting color at root"
+      <> help    "Starting color at root; can also be `random'"
       <> metavar "COLOR"
-      <> value   black )
+      <> value   defaultColor )
   <*> option (parsecReader color)
       (  long    "to"
       <> short   't'
-      <> help    "Ending color away from root"
+      <> help    "Ending color away from root; can also be `random'"
       <> metavar "COLOR"
-      <> value   white )
+      <> value   defaultColor )
   <*> argument str
       (  help    "Destination PNG file"
       <> metavar "FILE" )
@@ -87,20 +100,36 @@ distanceArrayOptions =
          \color gradually changes to the \"to color\" heading outwards from \
          \there." ]
 
+validateDimensions :: (Integral a, Monad m)
+                   => (String -> m b)
+                   -> ((a,a) -> m b)
+                   -> Maybe (m (Natural, Natural))
+                   -> m b
+validateDimensions bad _    Nothing =
+  bad "cannot request a square image in both dimensions"
+validateDimensions bad good (Just mdims) = do
+  (w,h) <- mdims
+  let ok what x | x <= fromIntegral (maxBound @Int) = Right $ fromIntegral x
+                | otherwise                         = Left what
+  case partitionEithers [ok "width" w, ok "height" h] of
+    ([], [w,h]) -> good (w,h)
+    (errs, _)   -> bad $ describeWithList "and" errs "" "" ++ " out of range"
+
 distanceArrayMain :: IO ()
 distanceArrayMain = do
   Configuration{..} <- execParser distanceArrayOptions
   
-  let dimension (low,high) =
-        fromInteger <$> getRandomR (toInteger low, toInteger high)
-  width  <- dimension configWidthRange
-  height <- dimension configHeightRange
+  (width, height) <- validateDimensions (die . ("option error: " ++)) pure
+                       $ getDimensions configWidthRange configHeightRange
+  fromColor       <- getColor configFromColor
+  toColor         <- getColor configToColor
+
   (_root, mst) <- randomSpanningTree $ SquareGridGraph{ gridWidth  = width
                                                       , gridHeight = height }
   let distances = rootedDistanceArray mst
   writePng configOutputFile $ drawDistanceArray @Word @Double
-    DistanceColoring{ fromColor  = configFromColor
-                    , toColor    = configToColor
+    DistanceColoring{ fromColor  = fromColor
+                    , toColor    = toColor
                     , colorStops = round . sqrt @Double . fromIntegral
                                      $ width*width + height*height }
     distances

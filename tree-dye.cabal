@@ -20,6 +20,7 @@ source-repository head
 library
   exposed-modules:     TreeDye.CLI
                      , TreeDye.CLI.Parsing
+                     , TreeDye.CLI.Types
                      , TreeDye.Output.Distances
                      , TreeDye.Tree.RandomSpanningTree
                      , TreeDye.Graph.Interface
@@ -28,12 +29,13 @@ library
                      , TreeDye.Pick
                      , TreeDye.Util.Function
                      , TreeDye.Util.List
+                     , TreeDye.Util.Random
                      , TreeDye.Util.String
   
   other-extensions:    TypeFamilies, FlexibleContexts, ScopedTypeVariables
                      , TypeApplications
-                     , ViewPatterns, BangPatterns, RecordWildCards, TupleSections
-                     , LambdaCase
+                     , ViewPatterns, BangPatterns, RecordWildCards
+                     , TupleSections, LambdaCase
                      , StandaloneDeriving, GeneralizedNewtypeDeriving
   
   -- Warnings: bounds are PVP-conformant guesses based on what's on my system
