@@ -1,10 +1,13 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts, ScopedTypeVariables,
+{-# LANGUAGE GADTs, TypeFamilies, FlexibleContexts, ScopedTypeVariables,
              TypeApplications, StandaloneDeriving,
              GeneralizedNewtypeDeriving #-}
 module TreeDye.Graph.Interface (
   -- * Graph interface type classes
   GraphI(..), GraphOrdI(..), GraphRandomI(..),
-  -- * Random-selectable graph wrapper
+  -- * Graph wrappers
+  SomeGraphI(..),
+  SomeGraphOrdI(..), SomeGraphRandomI(..),
+  SomeGraphRandomOrdI(..),
   GraphWithRandom(..)
 ) where
 
@@ -32,6 +35,64 @@ class GraphI g => GraphRandomI g where
 
   randomVertex   = pick .  vertices
   randomNeighbor = pick .: neighbors
+
+--------------------------------------------------------------------------------
+
+data SomeGraphI v where
+  SomeGraphI :: (GraphI g, Vertex g ~ v)
+             => g -> SomeGraphI v
+
+data SomeGraphOrdI v where
+  SomeGraphOrdI :: (GraphOrdI g, Vertex g ~ v)
+                => g -> SomeGraphOrdI v
+
+data SomeGraphRandomI v where
+  SomeGraphRandomI :: (GraphRandomI g, Vertex g ~ v)
+                   => g -> SomeGraphRandomI v
+
+data SomeGraphRandomOrdI v where
+  SomeGraphRandomOrdI :: (GraphRandomI g, GraphOrdI g, Vertex g ~ v)
+                      => g -> SomeGraphRandomOrdI v
+
+instance GraphI (SomeGraphI v) where
+  type Vertex (SomeGraphI v) = v
+  vertices  (SomeGraphI g) = vertices  g
+  edges     (SomeGraphI g) = edges     g
+  neighbors (SomeGraphI g) = neighbors g
+
+instance GraphI (SomeGraphOrdI v) where
+  type Vertex (SomeGraphOrdI v) = v
+  vertices  (SomeGraphOrdI g) = vertices  g
+  edges     (SomeGraphOrdI g) = edges     g
+  neighbors (SomeGraphOrdI g) = neighbors g
+
+instance GraphI (SomeGraphRandomI v) where
+  type Vertex (SomeGraphRandomI v) = v
+  vertices  (SomeGraphRandomI g) = vertices  g
+  edges     (SomeGraphRandomI g) = edges     g
+  neighbors (SomeGraphRandomI g) = neighbors g
+
+instance GraphI (SomeGraphRandomOrdI v) where
+  type Vertex (SomeGraphRandomOrdI v) = v
+  vertices  (SomeGraphRandomOrdI g) = vertices  g
+  edges     (SomeGraphRandomOrdI g) = edges     g
+  neighbors (SomeGraphRandomOrdI g) = neighbors g
+
+instance Ord v => GraphOrdI (SomeGraphOrdI v) where
+  minVertex (SomeGraphOrdI g) = minVertex g
+  maxVertex (SomeGraphOrdI g) = maxVertex g
+
+instance Ord v => GraphOrdI (SomeGraphRandomOrdI v) where
+  minVertex (SomeGraphRandomOrdI g) = minVertex g
+  maxVertex (SomeGraphRandomOrdI g) = maxVertex g
+
+instance GraphRandomI (SomeGraphRandomI v) where
+  randomVertex   (SomeGraphRandomI g) = randomVertex   g
+  randomNeighbor (SomeGraphRandomI g) = randomNeighbor g
+
+instance GraphRandomI (SomeGraphRandomOrdI v) where
+  randomVertex   (SomeGraphRandomOrdI g) = randomVertex   g
+  randomNeighbor (SomeGraphRandomOrdI g) = randomNeighbor g
 
 --------------------------------------------------------------------------------
 

@@ -5,7 +5,6 @@ module TreeDye.CLI (
   distanceArrayMain,
   -- * Command-line options
   Configuration(..), configurationOptions, helper,
-  SpreadDistance(..),
   -- ** Extra validation
   validateDimensions,
   -- ** Default values
@@ -19,7 +18,6 @@ import Numeric.Natural
 import Data.Foldable
 
 import TreeDye.Tree.RandomSpanningTree
-import TreeDye.Graph.Grid
 import TreeDye.Output.Distances
 
 import Codec.Picture
@@ -39,6 +37,7 @@ data Configuration =
                 , configFromColor      :: !Color
                 , configToColor        :: !Color
                 , configSpreadDistance :: !SpreadDistance
+                , configBoundary       :: !Boundary
                 , configOutputFile     :: !FilePath }
 
 defaultDimension :: Dimension
@@ -104,6 +103,17 @@ configurationOptions = Configuration
              <> help    "Spread color from the root until the distance \
                         \traveled is the specified value"
              <> metavar "DIST" ) ]
+  <*> asum [ pure Bounded
+           , flag' Bounded
+             (  long    "bounded"
+             <> short   'B'
+             <> help    "The spanning tree cannot cross the edges of the image \
+                        \(default)" )
+           , flag' Wrapping
+             (  long    "wrapping"
+             <> short   'W'
+             <> help    "The spanning tree can wrap across the edges of the \
+                        \image, as though on a torus" ) ]
   <*> argument str
       (  help    "Destination PNG file"
       <> metavar "FILE" )
@@ -156,9 +166,13 @@ distanceArrayMain = do
                        $ getDimensions configWidthRange configHeightRange
   fromColor       <- getColor configFromColor
   toColor         <- getColor configToColor
-
-  (_root, mst) <- randomSpanningTree $ SquareGridGraph{ gridWidth  = width
-                                                      , gridHeight = height }
+  
+  let graph = gridGraphWithBoundary configBoundary $
+                GridGraphConfig { gridWidth  = width
+                                , gridHeight = height }
+  
+  (_root, mst) <- randomSpanningTree graph
+  
   let distances = rootedDistanceArray mst
   
   writePng configOutputFile $ drawDistanceArray @Word @Double

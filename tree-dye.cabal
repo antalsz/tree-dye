@@ -33,8 +33,8 @@ library
                      , TreeDye.Util.Random
                      , TreeDye.Util.String
   
-  other-extensions:    TypeFamilies, FlexibleContexts, ScopedTypeVariables
-                     , TypeApplications
+  other-extensions:    GADTs, TypeFamilies, FlexibleContexts
+                     , ScopedTypeVariables, TypeApplications
                      , ViewPatterns, BangPatterns, RecordWildCards
                      , TupleSections, LambdaCase
                      , StandaloneDeriving, GeneralizedNewtypeDeriving

@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeApplications, ViewPatterns, LambdaCase #-}
+{-# LANGUAGE TypeApplications, ViewPatterns, RecordWildCards, LambdaCase #-}
 
 module TreeDye.CLI.Types (
   -- * Colors
@@ -7,6 +7,10 @@ module TreeDye.CLI.Types (
   Dimension(..), getDimension, getDimensions,
   -- * Spread distance
   SpreadDistance(..), getSpreadDistance,
+  -- * Boundary
+  Boundary(..), gridGraphWithBoundary,
+  -- ** Supporting type
+  GridGraphConfig(..),
   -- * Pretty-printing
   CLIPretty(..), prettyDefault
 ) where
@@ -14,6 +18,8 @@ module TreeDye.CLI.Types (
 import Data.Foldable
 import Numeric.Natural
 import Data.Array
+import TreeDye.Graph.Interface
+import TreeDye.Graph.Grid
 
 import Data.Colour
 import Data.Colour.SRGB
@@ -78,6 +84,29 @@ getSpreadDistance (fromIntegral -> width) (fromIntegral -> height) dists = \case
   SpreadToMaximum | null dists -> 0
                   | otherwise  -> fromIntegral $ maximum dists
   SpreadToFixedDistance d      -> d
+
+--------------------------------------------------------------------------------
+-- Spread distance
+--------------------------------------------------------------------------------
+
+data Boundary = Bounded
+              | Wrapping
+              deriving (Eq, Ord, Show, Read, Enum, Bounded)
+
+data GridGraphConfig n = GridGraphConfig { gridWidth  :: !n
+                                         , gridHeight :: !n }
+                 deriving (Eq, Ord, Show, Read)
+
+gridGraphWithBoundary :: (Integral n, Random n)
+                      => Boundary -> GridGraphConfig n
+                      -> SomeGraphRandomOrdI (n,n)
+gridGraphWithBoundary boundary GridGraphConfig{..} = case boundary of
+  Bounded  -> SomeGraphRandomOrdI $ SquareGridGraph
+                { sqgWidth  = gridWidth
+                , sqgHeight = gridHeight }
+  Wrapping -> SomeGraphRandomOrdI $ WrappingSquareGridGraph
+                { wsqgWidth  = gridWidth
+                , wsqgHeight = gridHeight }
 
 --------------------------------------------------------------------------------
 -- Pretty-printing
