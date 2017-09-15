@@ -34,6 +34,7 @@ drawDistanceArray DistanceColoring{..} distances =
 
   in case bounds distances of
        ((0,0), (maxX, maxY)) ->
-         (generateImage (pixel `on` fromIntegral) `on` fromIntegral) (maxX+1) (maxY+1)
+         (generateImage (pixel `on` fromIntegral) `on` fromIntegral)
+           (maxX+1) (maxY+1)
        _ ->
          error "drawDistanceArray: distance array indices must start at (0,0)"
