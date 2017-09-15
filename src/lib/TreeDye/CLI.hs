@@ -106,7 +106,8 @@ validateDimensions :: (Integral a, Monad m)
                    -> Maybe (m (Natural, Natural))
                    -> m b
 validateDimensions bad _    Nothing =
-  bad "cannot request a square image in both dimensions"
+  bad "invalid width and height: \
+      \cannot request a square image in both dimensions"
 validateDimensions bad good (Just mdims) = do
   (w,h) <- mdims
   let ok what x | x <= fromIntegral (maxBound @Int) = Right $ fromIntegral x
@@ -119,7 +120,7 @@ distanceArrayMain :: IO ()
 distanceArrayMain = do
   Configuration{..} <- execParser distanceArrayOptions
   
-  (width, height) <- validateDimensions (die . ("option error: " ++)) pure
+  (width, height) <- validateDimensions die pure
                        $ getDimensions configWidthRange configHeightRange
   fromColor       <- getColor configFromColor
   toColor         <- getColor configToColor
