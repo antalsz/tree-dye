@@ -5,6 +5,7 @@ module TreeDye.CLI (
   distanceArrayMain,
   -- * Command-line options
   Configuration(..), configurationOptions, helper,
+  SpreadDistance(..),
   -- ** Extra validation
   validateDimensions,
   -- ** Default values
@@ -15,6 +16,7 @@ module TreeDye.CLI (
 
 import Data.Either
 import Numeric.Natural
+import Data.Foldable
 
 import TreeDye.Tree.RandomSpanningTree
 import TreeDye.Graph.Grid
@@ -32,11 +34,12 @@ import qualified Options.Applicative.Help as H
 import TreeDye.CLI.Parsing
 
 data Configuration =
-  Configuration { configWidthRange  :: Dimension
-                , configHeightRange :: Dimension
-                , configFromColor   :: Color
-                , configToColor     :: Color
-                , configOutputFile  :: FilePath }
+  Configuration { configWidthRange     :: !Dimension
+                , configHeightRange    :: !Dimension
+                , configFromColor      :: !Color
+                , configToColor        :: !Color
+                , configSpreadDistance :: !SpreadDistance
+                , configOutputFile     :: !FilePath }
 
 defaultDimension :: Dimension
 defaultDimension = Range 100 1000
@@ -52,26 +55,55 @@ configurationOptions = Configuration
       <> help    "Image width or range of possible widths; \
                  \can also be `square'"
       <> metavar "INT[-INT]"
-      <> value   defaultDimension )
+      <> value   defaultDimension
+      <> prettyDefault )
   <*> option (parsecReader dimension)
       (  long    "height"
       <> short   'h'
       <> help    "Image height or range of possible heights; \
                  \can also be `square'"
       <> metavar "INT[-INT]"
-      <> value   defaultDimension )
+      <> value   defaultDimension
+      <> prettyDefault )
   <*> option (parsecReader color)
       (  long    "from"
       <> short   'f'
       <> help    "Starting color at root; can also be `random'"
       <> metavar "COLOR"
-      <> value   defaultColor )
+      <> value   defaultColor
+      <> prettyDefault )
   <*> option (parsecReader color)
       (  long    "to"
       <> short   't'
       <> help    "Ending color away from root; can also be `random'"
       <> metavar "COLOR"
-      <> value   defaultColor )
+      <> value   defaultColor
+      <> prettyDefault )
+  <*> asum [ pure SpreadToSum
+           , flag' SpreadToSum
+             (  long    "sum"
+             <> short   's'
+             <> help    "Spread color from the root until the distance \
+                        \traveled is the sum of the width and height of the \
+                        \image (its Manhattan diagonal) (default)" )
+           , flag' SpreadToEuclidean
+             (  long    "euclidean"
+             <> short   'e'
+             <> help    "Spread color from the root until the distance \
+                        \traveled is the square root of the sum of the squares \
+                        \of the width and height of the image (its Euclidean \
+                        \diagonal)" )
+           , flag' SpreadToMaximum
+             (  long    "max"
+             <> short   'm'
+             <> help    "Spread color from the root all the way until the end \
+                        \of the tree" )
+           , option (SpreadToFixedDistance <$> auto)
+             (  long    "fixed"
+             <> short   'F'
+             <> help    "Spread color from the root until the distance \
+                        \traveled is the specified value"
+             <> metavar "DIST" ) ]
   <*> argument str
       (  help    "Destination PNG file"
       <> metavar "FILE" )
@@ -128,9 +160,10 @@ distanceArrayMain = do
   (_root, mst) <- randomSpanningTree $ SquareGridGraph{ gridWidth  = width
                                                       , gridHeight = height }
   let distances = rootedDistanceArray mst
+  
   writePng configOutputFile $ drawDistanceArray @Word @Double
     DistanceColoring{ fromColor  = fromColor
                     , toColor    = toColor
-                    , colorStops = round . sqrt @Double . fromIntegral
-                                     $ width*width + height*height }
+                    , colorStops = getSpreadDistance width height distances
+                                                     configSpreadDistance }
     distances
