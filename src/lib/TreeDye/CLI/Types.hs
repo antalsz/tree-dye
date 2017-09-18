@@ -16,6 +16,7 @@ module TreeDye.CLI.Types (
 ) where
 
 import Data.Foldable
+import Control.Monad
 import Numeric.Natural
 import Data.Array
 import TreeDye.Graph.Interface
@@ -25,7 +26,8 @@ import Data.Colour
 import Data.Colour.SRGB
 import TreeDye.Util.Colour
 
-import Control.Monad.Random
+import System.Random
+import Control.Monad.Random.Class
 import TreeDye.Util.Random
 
 import Options.Applicative

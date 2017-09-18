@@ -43,6 +43,7 @@ library
   build-depends:       base                 == 4.10.*
                      , array                == 0.5.*
                      , containers           == 0.5.*
+                     , random               == 1.1.*
                      , MonadRandom          == 0.5.*
                      , colour               == 2.3.*
                      , JuicyPixels          == 3.2.*

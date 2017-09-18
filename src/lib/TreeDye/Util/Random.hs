@@ -9,7 +9,8 @@ import Numeric.Natural
 import Data.Bits
 import Data.Word
 
-import Control.Monad.Random
+import System.Random
+import Control.Monad.Random.Class
 
 -- | Generate a random 'Double' in @[0,1]@.  This implementation is the same as
 -- the @'Random' 'Double'@ instance, but for for the closed interval instead of

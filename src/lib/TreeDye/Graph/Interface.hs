@@ -14,7 +14,7 @@ module TreeDye.Graph.Interface (
 import TreeDye.Util.Function
 import Data.Coerce
 
-import Control.Monad.Random
+import Control.Monad.Random.Class
 import TreeDye.Pick
 
 class GraphI g where

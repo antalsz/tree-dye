@@ -6,10 +6,11 @@ module TreeDye.Graph.Grid (
   WrappingSquareGridGraph(..)
 ) where
 
+import System.Random
+import Control.Monad.Random.Class
 import TreeDye.Util.Function
 import TreeDye.Util.List
 import TreeDye.Graph.Interface
-import Control.Monad.Random
 
 -- TODO: Positive
 data SquareGridGraph n = SquareGridGraph { sqgWidth  :: !n

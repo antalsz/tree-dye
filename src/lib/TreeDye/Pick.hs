@@ -7,7 +7,8 @@ module TreeDye.Pick (
   pickByIndex
 ) where
 
-import Control.Monad.Random
+import System.Random
+import Control.Monad.Random.Class
 
 import qualified Data.Array      as A
 import qualified Data.Set        as S

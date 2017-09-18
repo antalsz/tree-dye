@@ -20,7 +20,7 @@ import Data.Array
 import Data.Array.ST.Safe
 import Data.Array.Unsafe (unsafeFreeze)
 
-import Control.Monad.Random
+import Control.Monad.Random.Strict
 import Control.Monad.ST
 
 newtype ParentTree v = ParentTree (Array v (Maybe v))
