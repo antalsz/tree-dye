@@ -27,15 +27,18 @@ drawDistanceArray
   :: (Integral i, Ix i, Floating c, RealFrac c)
   => DistanceColoring c -> Array (i, i) Natural -> Image PixelRGB16
 drawDistanceArray DistanceColoring{..} distances =
-  let colorFrac p =
-        case distances ! p of
+  let colorFrac d =
+        case d of
           n | n < colorStops -> 1 - fromIntegral n / fromIntegral colorStops
             | otherwise      -> 0
       
-      distColor p = blend (colorFrac p) fromColor toColor
+      distColor d = blend (colorFrac d) fromColor toColor
       
-      pixel x y = uncurryRGB PixelRGB16 . toSRGBBounded $ distColor (x,y)
-
+      distPixel = uncurryRGB PixelRGB16 . toSRGBBounded . distColor
+      
+      colors = listArray (0,colorStops) $ map distPixel [0..colorStops]
+      
+      pixel x y = colors ! min colorStops (distances ! (x,y))
   in case bounds distances of
        ((0,0), (maxX, maxY)) ->
          (generateImage (pixel `on` fromIntegral) `on` fromIntegral)
