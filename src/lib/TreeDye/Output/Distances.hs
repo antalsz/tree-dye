@@ -18,6 +18,10 @@ data DistanceColoring c = DistanceColoring { fromColor  :: Colour c
                                            , toColor    :: Colour c
                                            , colorStops :: Natural }
                         deriving (Eq, Show, Read)
+-- 'colorStops' specifies the number of /foreground/ colors.  So if 'colorStops'
+-- is 0, the spanning tree will be invisible.  This is important for the
+-- definition of the "maximum" coloring scheme, although it does make the name
+-- "colorStops" slightly odd
 
 drawDistanceArray
   :: (Integral i, Ix i, Floating c, RealFrac c)
@@ -25,7 +29,7 @@ drawDistanceArray
 drawDistanceArray DistanceColoring{..} distances =
   let colorFrac p =
         case distances ! p of
-          n | n < colorStops -> 1 - fromIntegral n / fromIntegral (colorStops+1)
+          n | n < colorStops -> 1 - fromIntegral n / fromIntegral colorStops
             | otherwise      -> 0
       
       distColor p = blend (colorFrac p) fromColor toColor
