@@ -24,8 +24,11 @@ random01 = do
   let low53 = 2 `unsafeShiftL` 52 - 1 :: Word64
   w <- getRandom
   pure $ fromIntegral (w .&. low53) / fromIntegral low53
+{-# INLINABLE random01 #-}
 
 instance Random Natural where
   randomR (l,h) = first fromInteger . randomR (toInteger l, toInteger h)
   random        = randomR ( fromIntegral $ minBound @Word
                           , fromIntegral $ maxBound @Word )
+  {-# INLINABLE randomR #-}
+  {-# INLINABLE random  #-}
