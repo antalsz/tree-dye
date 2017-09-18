@@ -36,7 +36,7 @@ library
   other-extensions:    GADTs, TypeFamilies, FlexibleContexts
                      , ScopedTypeVariables, TypeApplications
                      , ViewPatterns, BangPatterns, RecordWildCards
-                     , TupleSections, LambdaCase
+                     , TupleSections, LambdaCase, MultiWayIf
                      , StandaloneDeriving, GeneralizedNewtypeDeriving
   
   -- Warnings: bounds are PVP-conformant guesses based on what's on my system
