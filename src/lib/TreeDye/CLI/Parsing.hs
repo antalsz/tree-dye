@@ -83,8 +83,8 @@ keywords = void . asum . map string'
 
 ---------- Type ----------
 
-data Number = NumNatural  Natural
-            | NumRational Rational
+data Number = NumNatural  !Natural
+            | NumRational !Rational
             deriving (Eq, Ord, Show, Read)
 
 foldNumber :: (Natural -> a) -> (Rational -> a) -> Number -> a
@@ -212,15 +212,15 @@ namedColor =   label "color name"
 ---------- RGB triples: generic structure ----------
 
 data RGBTripleValidator raw chan color =
-  RGBTripleValidator { rgbtLow       :: raw
-                     , rgbtHigh      :: raw
-                     , rgbtToChannel :: raw -> chan
-                     , rgbtColor     :: chan -> chan -> chan -> color }
+  RGBTripleValidator { rgbtLow       :: !raw
+                     , rgbtHigh      :: !raw
+                     , rgbtToChannel :: !(raw -> chan)
+                     , rgbtColor     :: !(chan -> chan -> chan -> color) }
 
 data RGBTriple m raw chan color =
-  RGBTriple { rgbtSuffix    :: String
-            , rgbtChannel   :: m raw
-            , rgbtValidator :: RGBTripleValidator raw chan color }
+  RGBTriple { rgbtSuffix    :: !String
+            , rgbtChannel   :: !(m raw)
+            , rgbtValidator :: !(RGBTripleValidator raw chan color) }
 
 rawRGBTriple :: (MonadParsec e s m, Token s ~ Char, Tokens s ~ String)
              => String -> m a -> m (a,a,a)

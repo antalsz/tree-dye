@@ -14,9 +14,9 @@ import Data.Colour.RGBSpace
 import Data.Colour.SRGB
 import Codec.Picture
 
-data DistanceColoring c = DistanceColoring { foregroundColor :: Colour c
-                                           , backgroundColor :: Colour c
-                                           , spreadDistance  :: Natural }
+data DistanceColoring c = DistanceColoring { foregroundColor :: !(Colour c)
+                                           , backgroundColor :: !(Colour c)
+                                           , spreadDistance  :: !Natural }
                         deriving (Eq, Show, Read)
 -- 'spreadDistance' specifies the maximum distance to which the color will
 -- spread, non-inclusive; this works out to being the number of foreground
