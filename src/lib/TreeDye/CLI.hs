@@ -176,8 +176,8 @@ distanceArrayMain = do
   let distances = rootedDistanceArray mst
   
   writePng configOutputFile $ drawDistanceArray @Word @Double
-    DistanceColoring{ fromColor  = fromColor
-                    , toColor    = toColor
-                    , colorStops = getSpreadDistance width height distances
-                                                     configSpreadDistance }
+    DistanceColoring{ fromColor      = fromColor
+                    , toColor        = toColor
+                    , spreadDistance = getSpreadDistance width height distances
+                                                         configSpreadDistance }
     distances
