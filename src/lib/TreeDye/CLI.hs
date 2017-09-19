@@ -32,13 +32,13 @@ import qualified Options.Applicative.Help as H
 import TreeDye.CLI.Parsing
 
 data Configuration =
-  Configuration { configWidthRange     :: !Dimension
-                , configHeightRange    :: !Dimension
-                , configFromColor      :: !Color
-                , configToColor        :: !Color
-                , configSpreadDistance :: !SpreadDistance
-                , configBoundary       :: !Boundary
-                , configOutputFile     :: !FilePath }
+  Configuration { configWidthRange      :: !Dimension
+                , configHeightRange     :: !Dimension
+                , configForegroundColor :: !Color
+                , configBackgroundColor :: !Color
+                , configSpreadDistance  :: !SpreadDistance
+                , configBoundary        :: !Boundary
+                , configOutputFile      :: !FilePath }
 
 defaultDimension :: Dimension
 defaultDimension = Range 100 1000
@@ -65,16 +65,20 @@ configurationOptions = Configuration
       <> value   defaultDimension
       <> prettyDefault )
   <*> option (parsecReader color)
-      (  long    "from"
+      (  long    "foreground"
       <> short   'f'
-      <> help    "Starting color at root; can also be `random'"
+      <> help    "The foreground color \
+                 \(the starting color at the root of the tree); \
+                 \can also be `random'"
       <> metavar "COLOR"
       <> value   defaultColor
       <> prettyDefault )
   <*> option (parsecReader color)
-      (  long    "to"
-      <> short   't'
-      <> help    "Ending color away from root; can also be `random'"
+      (  long    "background"
+      <> short   'b'
+      <> help    "The background color \
+                 \(the ending color away from the root); \
+                 \can also be `random'"
       <> metavar "COLOR"
       <> value   defaultColor
       <> prettyDefault )
@@ -137,10 +141,12 @@ distanceArrayOptions =
          \specified to be a range, the actual dimension is chosen from that \
          \range uniformly at random."
        
-       , "A random location in the image is chose (uniformly) to be the root \
-         \of the spanning tree; it is given the \"from\" color, and then the \
-         \color gradually changes to the \"to color\" heading outwards from \
-         \there." ]
+       , "A random location in the image is chosen (uniformly) to be the root \
+         \of the spanning tree; it is given the foreground color, and then the \
+         \color gradually changes to the background color heading outwards \
+         \from there.  The color stops changing after the specified spreading \
+         \distance (by default, the Manhattan diagonal; that is, \
+         \width + height)." ]
 
 validateDimensions :: (Integral a, Monad m)
                    => (String -> m b)
@@ -164,8 +170,8 @@ distanceArrayMain = do
   
   (width, height) <- validateDimensions die pure
                        $ getDimensions configWidthRange configHeightRange
-  fromColor       <- getColor configFromColor
-  toColor         <- getColor configToColor
+  foregroundColor <- getColor configForegroundColor
+  backgroundColor <- getColor configBackgroundColor
   
   let graph = gridGraphWithBoundary configBoundary $
                 GridGraphConfig { gridWidth  = width
@@ -176,8 +182,8 @@ distanceArrayMain = do
   let distances = rootedDistanceArray mst
   
   writePng configOutputFile $ drawDistanceArray @Word @Double
-    DistanceColoring{ fromColor      = fromColor
-                    , toColor        = toColor
-                    , spreadDistance = getSpreadDistance width height distances
-                                                         configSpreadDistance }
+    DistanceColoring{ foregroundColor = foregroundColor
+                    , backgroundColor = backgroundColor
+                    , spreadDistance  = getSpreadDistance width height distances
+                                                          configSpreadDistance }
     distances
