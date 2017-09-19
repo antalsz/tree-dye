@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications, RecordWildCards #-}
 
 module TreeDye.Output.Distances (
   drawDistanceArray,
@@ -6,7 +6,6 @@ module TreeDye.Output.Distances (
 ) where
 
 import Data.Function
-import Numeric.Natural
 import Data.Array
 
 import Data.Colour
@@ -14,10 +13,10 @@ import Data.Colour.RGBSpace
 import Data.Colour.SRGB
 import Codec.Picture
 
-data DistanceColoring c = DistanceColoring { foregroundColor :: !(Colour c)
-                                           , backgroundColor :: !(Colour c)
-                                           , spreadDistance  :: !Natural }
-                        deriving (Eq, Show, Read)
+data DistanceColoring c d = DistanceColoring { foregroundColor :: !(Colour c)
+                                             , backgroundColor :: !(Colour c)
+                                             , spreadDistance  :: !d }
+                          deriving (Eq, Show, Read)
 -- 'spreadDistance' specifies the maximum distance to which the color will
 -- spread, non-inclusive; this works out to being the number of foreground
 -- colors.  So if 'spreadDistance' is 0, the spanning tree will be invisible.
@@ -26,9 +25,10 @@ data DistanceColoring c = DistanceColoring { foregroundColor :: !(Colour c)
 -- only those pixels get the background color, and (b) those pixels get set to
 -- the actual background color and not one shade before it.
 
+-- NB: Caches the color blends, so relies on the `spreadDistance` being integral
 drawDistanceArray
-  :: (Integral i, Ix i, Floating c, RealFrac c)
-  => DistanceColoring c -> Array (i, i) Natural -> Image PixelRGB16
+  :: (Floating c, RealFrac c, Ix d, Integral d)
+  => DistanceColoring c d -> Array (Int, Int) d -> Image PixelRGB16
 drawDistanceArray DistanceColoring{..} distances =
   let colorFrac d
         | d < spreadDistance = 1 - fromIntegral d / fromIntegral spreadDistance
@@ -38,12 +38,22 @@ drawDistanceArray DistanceColoring{..} distances =
       
       distPixel = uncurryRGB PixelRGB16 . toSRGBBounded . distColor
       
-      colors = listArray (0,spreadDistance) $ map distPixel [0..spreadDistance]
+      colors = listArray (0,spreadDistance)
+             . map distPixel $ range (0,spreadDistance)
       
       pixel x y = colors ! min spreadDistance (distances ! (x,y))
   in case bounds distances of
-       ((0,0), (maxX, maxY)) ->
-         (generateImage (pixel `on` fromIntegral) `on` fromIntegral)
-           (maxX+1) (maxY+1)
-       _ ->
-         error "drawDistanceArray: distance array indices must start at (0,0)"
+       ((0,0), (maxX, maxY)) | maxX < maxBound && maxY < maxBound ->
+         generateImage (pixel `on` fromIntegral) (maxX+1) (maxY+1)
+       
+       ((minX,minY), (maxX, maxY)) ->
+         generateImage (\x y -> (pixel `on` fromIntegral) (x + minX) (y + minY))
+                       (dimension minX maxX) (dimension minY maxY)
+         where word = fromIntegral @Int @Word
+               dimension min max
+                 | max < min = 0
+                 | otherwise = case word max - word min of
+                     diff | diff < word maxBound -> fromIntegral diff + 1
+                          | otherwise            ->
+                              error "drawDistanceArray: \
+                                    \distance array dimensions too large"

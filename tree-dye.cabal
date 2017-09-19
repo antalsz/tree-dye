@@ -29,6 +29,7 @@ library
                      , TreeDye.Pick
                      , TreeDye.Util.Function
                      , TreeDye.Util.List
+                     , TreeDye.Util.Numeric
                      , TreeDye.Util.Colour
                      , TreeDye.Util.Random
                      , TreeDye.Util.String

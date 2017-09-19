@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeApplications, RecordWildCards #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module TreeDye.CLI (
   -- * Main functions
@@ -14,8 +14,9 @@ module TreeDye.CLI (
 ) where
 
 import Data.Either
-import Numeric.Natural
 import Data.Foldable
+import Numeric.Natural
+import TreeDye.Util.Numeric
 
 import TreeDye.Tree.RandomSpanningTree
 import TreeDye.Output.Distances
@@ -148,18 +149,18 @@ distanceArrayOptions =
          \distance (by default, the Manhattan diagonal; that is, \
          \width + height)." ]
 
-validateDimensions :: (Integral a, Monad m)
-                   => (String -> m b)
-                   -> ((a,a) -> m b)
+validateDimensions :: Monad m
+                   => (String  -> m b)
+                   -> ((a,a)   -> m b)
+                   -> (Natural -> Maybe a)
                    -> Maybe (m (Natural, Natural))
                    -> m b
-validateDimensions bad _    Nothing =
+validateDimensions bad _    _        Nothing =
   bad "invalid width and height: \
       \cannot request a square image in both dimensions"
-validateDimensions bad good (Just mdims) = do
+validateDimensions bad good validate (Just mdims) = do
   (w,h) <- mdims
-  let ok what x | x <= fromIntegral (maxBound @Int) = Right $ fromIntegral x
-                | otherwise                         = Left what
+  let ok what = maybe (Left what) Right . validate
   case partitionEithers [ok "width" w, ok "height" h] of
     ([], [w,h]) -> good (w,h)
     (errs, _)   -> bad $ describeWithList "and" errs "" "" ++ " out of range"
@@ -168,7 +169,7 @@ distanceArrayMain :: IO ()
 distanceArrayMain = do
   Configuration{..} <- execParser distanceArrayOptions
   
-  (width, height) <- validateDimensions die pure
+  (width, height) <- validateDimensions die pure fromNaturalBounded
                        $ getDimensions configWidthRange configHeightRange
   foregroundColor <- getColor configForegroundColor
   backgroundColor <- getColor configBackgroundColor
@@ -178,10 +179,9 @@ distanceArrayMain = do
                                 , gridHeight = height }
   
   (_root, mst) <- randomSpanningTree graph
-  
   let distances = rootedDistanceArray mst
   
-  writePng configOutputFile $ drawDistanceArray @Word @Double
+  writePng configOutputFile $ drawDistanceArray
     DistanceColoring{ foregroundColor = foregroundColor
                     , backgroundColor = backgroundColor
                     , spreadDistance  = getSpreadDistance width height distances
