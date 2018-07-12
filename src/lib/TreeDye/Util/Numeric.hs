@@ -6,7 +6,7 @@ import Numeric.Natural
 
 fromIntegerBounded :: forall a. (Integral a, Bounded a) => Integer -> Maybe a
 fromIntegerBounded n
-  | n <= toInteger (minBound @a) && n <= toInteger (maxBound @a)
+  | toInteger (minBound @a) <= n && n <= toInteger (maxBound @a)
       = Just $! fromInteger @a n
   | otherwise
       = Nothing
