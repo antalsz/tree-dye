@@ -4,6 +4,12 @@ import Prelude hiding (tan)
 import Data.Colour
 import Data.Colour.Names
 
+-- |An association list mapping color names to the corresponding 'Colour'.  The
+-- reified form of 'Data.Colour.Names.readColourName'.
+--
+-- > lookup name colourNames == readColourName name
+--
+-- This is a polymorphic constant, but has a specialization to @Colour Double@.
 colourNames :: (Ord a, Floating a) => [(String, Colour a)]
 colourNames = 
   [ ("aliceblue",            aliceblue)
