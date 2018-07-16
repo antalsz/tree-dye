@@ -8,11 +8,16 @@ module TreeDye.Tree.RandomSpanningTree (
   rootedDistanceArray,
 
   -- * Parent-pointing trees as arrays
-  ParentTree(), parentTreeArray, parentTreeRoot
+  ParentTree(), parentTreeArray, parentTreeRoot,
+  -- ** Converting parent-pointing trees to other representations
+  parentTreeToRose, parentTreeToChildren
 ) where
 
 import Data.Foldable
 import Data.Maybe
+
+import qualified Data.Set  as S
+import qualified Data.Tree as T
 
 import TreeDye.Graph.Interface
 
@@ -34,6 +39,27 @@ parentTreeRoot :: Ix v => ParentTree v -> v
 parentTreeRoot =
   maybe (error "parentTreeRoot: internal error, missing root node!") fst
     . find (isNothing . snd) . assocs . parentTreeArray
+
+-- |Convert a 'ParentTree' to an array where vertices are indices whose values
+-- are their /children/.  \(O(n \log n)\).
+--
+-- TODO: Return the root.
+parentTreeToChildren :: Ix v => ParentTree v -> Array v (S.Set v)
+parentTreeToChildren (parentTreeArray -> parents) = runSTArray $ do
+  let pbounds = bounds parents
+  arr <- newArray pbounds S.empty
+  for_ (range pbounds) $ \c ->
+    for_ (parents ! c) $ \p ->
+      writeArray arr p . S.insert c =<< readArray arr p -- TODO: Modify
+  pure arr
+
+-- |Convert a 'ParentTree' to a rose tree from @containers@.
+parentTreeToRose :: Ix v => ParentTree v -> T.Tree v
+parentTreeToRose parents = go root where
+  root     = parentTreeRoot       parents -- TODO: unify ↓
+  children = parentTreeToChildren parents -- TODO: unify ↑
+  
+  go v = T.Node v . map go . toList $ children ! v
 
 -- |Implements the RandomTreeWithRoot algorithm (Figure 1), applied to a random
 -- node, from "Generating Random Spanning Trees More Quickly than the Cover
