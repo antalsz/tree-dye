@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.Random
+Description : Utilities for generating random values
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for generating random values.
+-}
+
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
@@ -26,6 +36,8 @@ random01 = do
   pure $ fromIntegral (w .&. low53) / fromIntegral low53
 {-# INLINABLE random01 #-}
 
+-- |This instance arbitrarily uses the range of 'Word' as its default range,
+-- similarly to how the instance for 'Integer' works.
 instance Random Natural where
   randomR (l,h) = first fromInteger . randomR (toInteger l, toInteger h)
   random        = randomR ( fromIntegral $ minBound @Word

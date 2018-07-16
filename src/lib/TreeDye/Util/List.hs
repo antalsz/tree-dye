@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.List
+Description : Utilities for working with lists
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for working with lists.
+-}
+
 module TreeDye.Util.List (upto) where
 
 import Numeric.Natural

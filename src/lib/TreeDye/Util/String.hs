@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.String
+Description : Utilities for formatting strings
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for formatting strings.
+-}
+
 module TreeDye.Util.String (describeWithList) where
 
 -- |Format a list for English-language human-facing output.  Takes as its arguments:

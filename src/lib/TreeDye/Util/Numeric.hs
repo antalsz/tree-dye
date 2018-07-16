@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.Numeric
+Description : Utilities for working with numeric types
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for working with numeric types.
+-}
+
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 
 module TreeDye.Util.Numeric (fromIntegerBounded, fromNaturalBounded) where

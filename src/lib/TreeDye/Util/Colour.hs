@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.Colour
+Description : Utilities for working with 'Colour's
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for working with 'Colour's.
+-}
+
 module TreeDye.Util.Colour (colourNames) where
 
 import Prelude hiding (tan)

@@ -1,3 +1,13 @@
+{-|
+Module      : TreeDye.Util.Function
+Description : Utilities for manipulating functions
+Copyright   : © Antal Spector-Zabusky 2017–2018
+License     : BSD3
+Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
+
+Utilities for manipulating functions.
+-}
+
 module TreeDye.Util.Function ((.:), (<&>)) where
 
 -- |Compose a one-argument function with a two-argument function.
