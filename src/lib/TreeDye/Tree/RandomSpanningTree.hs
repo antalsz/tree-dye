@@ -36,10 +36,11 @@ import TreeDye.Graph.Interface
 
 import Data.Array
 import Data.Array.ST.Safe
-import Data.Array.Unsafe (unsafeFreeze)
+import TreeDye.Util.Array
 
 import Control.Monad.Random.Strict
 import Control.Monad.ST
+import Data.STRef.Strict
 
 -- |A tree type implemented in terms of an array.  The vertices must be
 -- instances of 'Ix'.  The underlying array (see 'parentTreeArray') has vertices
@@ -61,24 +62,25 @@ parentTreeRoot =
     . find (isNothing . snd) . assocs . parentTreeArray
 
 -- |Convert a 'ParentTree' to an array where vertices are indices, each of which
--- has as its value the set of its /children/.  \(O(n \log n)\).
+-- has as its value the set of its /children/.  Also returns the root of the
+-- tree.  \(O(n \log n)\).
 --
--- TODO: Return the root.
-parentTreeToChildren :: Ix v => ParentTree v -> Array v (S.Set v)
-parentTreeToChildren (parentTreeArray -> parents) = runSTArray $ do
+-- TODO: Empty 'ParentTree's?
+parentTreeToChildren :: Ix v => ParentTree v -> (v, Array v (S.Set v))
+parentTreeToChildren (parentTreeArray -> parents) = runSTArrayWith $ do
   let pbounds = bounds parents
-  arr <- newArray pbounds S.empty
+  arr  <- newArray pbounds S.empty
+  root <- newSTRef Nothing
   for_ (range pbounds) $ \c ->
-    for_ (parents ! c) $ \p ->
-      writeArray arr p . S.insert c =<< readArray arr p -- TODO: define & use 'modifySTArray'
-  pure arr
+    case parents ! c of
+      Nothing -> writeSTRef root $ Just c
+      Just p  -> modifyArray' arr p $ S.insert c
+  (, arr) . maybe (error "parentTreeToChildren: Empty tree!") id <$> readSTRef root
 
 -- |Convert a 'ParentTree' to a rose tree from @containers@.
 parentTreeToRose :: Ix v => ParentTree v -> T.Tree v
 parentTreeToRose parents = go root where
-  root     = parentTreeRoot       parents -- TODO: unify ↓
-  children = parentTreeToChildren parents -- TODO: unify ↑
-  
+  (root, children) = parentTreeToChildren parents
   go v = T.Node v . map go . toList $ children ! v
 
 -- |Generate a spanning tree uniformly at random (a uniform spanning tree) for
@@ -106,7 +108,7 @@ randomSpanningTree'
   => gr -> Rand gen (Vertex gr, ParentTree (Vertex gr))
 randomSpanningTree' gr = liftRandT $ \gen0 ->
   let (root, gen1) = runRand (randomVertex gr) gen0
-      (mst, gen2) = runST $ do
+      (gen2, mst) = runSTArrayWith $ do
         let bounds = (minVertex gr, maxVertex gr)
         
         inTree <- newArray bounds False
@@ -135,7 +137,7 @@ randomSpanningTree' gr = liftRandT $ \gen0 ->
                                \internal error, invariant violated") id)
               . lift $ readArray parent v
         
-        (, gen2) <$> unsafeFreeze parent
+        pure (gen2, parent)
   in pure ((root, ParentTree mst), gen2)
 
 -- |Take a 'ParentTree' and create an array where each vertex has as its value
