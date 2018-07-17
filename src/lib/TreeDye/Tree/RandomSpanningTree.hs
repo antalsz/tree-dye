@@ -75,7 +75,7 @@ parentTreeToChildren (parentTreeArray -> parents) = runSTArrayWith $ do
     case parents ! c of
       Nothing -> writeSTRef root $ Just c
       Just p  -> modifyArray' arr p $ S.insert c
-  (, arr) . maybe (error "parentTreeToChildren: Empty tree!") id <$> readSTRef root
+  (, arr) . fromMaybe (error "parentTreeToChildren: Empty tree!") <$> readSTRef root
 
 -- |Convert a 'ParentTree' to a rose tree from @containers@.
 parentTreeToRose :: Ix v => ParentTree v -> T.Tree v
@@ -133,8 +133,8 @@ randomSpanningTree' gr = liftRandT $ \gen0 ->
             pure v'
           untilInTree i $ \v -> do
             lift $ writeArray inTree v True
-            fmap (maybe (error "randomSpanningTreeParentArrayGen: \
-                               \internal error, invariant violated") id)
+            fmap (fromMaybe $ error "randomSpanningTree': \
+                                    \internal error, invariant violated")
               . lift $ readArray parent v
         
         pure (gen2, parent)
