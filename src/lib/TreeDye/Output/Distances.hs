@@ -61,7 +61,7 @@ import Codec.Picture
 -- > |345|   |   |
 -- > |232|   |. .|
 -- > |101|   |:#:|
--- > |432|   | .:|
+-- > |432|   |  .|
 -- > +---+   +---+
 data DistanceColoring c d =
   DistanceColoring
