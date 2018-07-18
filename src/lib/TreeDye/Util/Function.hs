@@ -14,7 +14,7 @@ module TreeDye.Util.Function ((.:), (<&>)) where
 --
 -- > (f .: g) x y == f (g x y)
 --
--- For example
+-- For example:
 --
 -- >>> (reverse .: map) (*10) [1..3]
 -- [30,20,10]
