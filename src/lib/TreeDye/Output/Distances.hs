@@ -52,7 +52,7 @@ import Codec.Picture
 -- * At distance @3@, white.
 -- * At distances larger than @3@, still white.
 --
--- Thus, if we represent black by @#@, ⅔ gray by @:@, ⅓ gray by @.@, and white
+-- Thus, if we represent black by @#@, ⅔ gray by @=@, ⅓ gray by @.@, and white
 -- by a blank space, we can present an example image, with its
 -- (single-digit) distances in a spanning tree on the left and its colored
 -- version on the right:
@@ -60,7 +60,7 @@ import Codec.Picture
 -- > +---+   +---+
 -- > |345|   |   |
 -- > |232|   |. .|
--- > |101|   |:#:|
+-- > |101|   |=#=|
 -- > |432|   |  .|
 -- > +---+   +---+
 data DistanceColoring c d =
