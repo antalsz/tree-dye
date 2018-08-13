@@ -95,7 +95,10 @@ drawDistanceArray
   => DistanceColoring c d -> Array (Int, Int) d -> Image PixelRGB16
 drawDistanceArray DistanceColoring{..} distances =
   let -- TODO: Factor some of this out for testing or for general utility?
-      
+
+      -- TODO: Customize this?  Nonlinear?  E.g., for Nate, I did @1 - (d/D)^2@,
+      -- and it worked well with a dark color on a light background (D = spread
+      -- distance).
       colorFrac d
         | d < spreadDistance = 1 - fromIntegral d / fromIntegral spreadDistance
         | otherwise          = 0
