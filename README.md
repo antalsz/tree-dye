@@ -97,9 +97,9 @@ Thanks, Michael!
     rainbow colorization corresponding to depth.  It even includes the “tie-dye”
     analogy!
   
-  - [The slides from “Algorithm” is Not a Four-Letter Word][], Jamis Buck's
+  - [The slides from “Algorithm” is Not a Four-Letter Word][], Jamis Buck’s
     RubyConf 2011 presentation, which explain various different maze generation
-    algorithms; relatedly, Buck's post [“Maze Generation: Algorithm Recap”][] on
+    algorithms; relatedly, Buck’s post [“Maze Generation: Algorithm Recap”][] on
     his blog [The Buckblog][] from February 7, 2011, which expands on some of
     the same algorithms as the presentation.
 
