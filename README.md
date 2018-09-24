@@ -1,8 +1,9 @@
 # Tree-Dye
 
-![A gold spanning tree on a deep purple background](README-art/purple-and-gold.png "Generated with `tree-dye --width 800 --height square --foreground '#B08A00' --background '#330066' --sum --bounded README-art/purple-and-gold.png`")
+![A gold spanning tree on a deep purple background](README-art/purple-and-gold.png "Generated with `tree-dye --width 400 --height square --foreground '#B08A00' --background '#330066' --sum --bounded README-art/purple-and-gold.png`")
+![A purple on green spanning tree image covering the whole canvas](README-art/full-bleed-random.png "Generated with `tree-dye -w400 -hx -m -B README-art/full-bleed-random.png`")
 
-Tree-Dye is an application and library for generating random art like the image
+Tree-Dye is an application and library for generating random art like the images
 you see above.  These images are generated using random spanning trees, and are
 perhaps vaguely reminiscent of [tie-dye][].
 
@@ -13,8 +14,6 @@ perhaps vaguely reminiscent of [tie-dye][].
 3. [Documentation](#documentation)
 4. [Acknowledgments](#acknowledgments)
 5. [References](#references)
-
-![A green and blue spanning tree image covering the whole canvas](README-art/full-bleed-random.png "Generated with `tree-dye -w800 -hx -m -B README-art/full-bleed-random.png` after 4 tries")
 
 ## Documentation
 
