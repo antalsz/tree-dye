@@ -1,11 +1,20 @@
 # Tree-Dye
 
-![A gold spanning tree on a deep purple background](README-art/purple-and-gold.png "Generated with `tree-dye --width 400 --height square --foreground '#B08A00' --background '#330066' --sum --bounded README-art/purple-and-gold.png`")
-![A purple on green spanning tree image covering the whole canvas](README-art/full-bleed-random.png "Generated with `tree-dye -w400 -hx -m -B README-art/full-bleed-random.png`")
+![A gold spanning tree on a deep purple background][purple and gold tree-dye]&nbsp;&nbsp;&nbsp;&nbsp;![A purple on green spanning tree image covering the whole canvas][full-bleed tree-dye]
+
+[purple and gold tree-dye]:
+  README-art/purple-and-gold.png
+  "Generated with `tree-dye --width 400 --height square --foreground '#B08A00' --background '#330066' --sum --bounded README-art/purple-and-gold.png`"
+
+[full-bleed tree-dye]:
+  README-art/full-bleed-random.png
+  "Generated with `tree-dye -w400 -hx -m -B README-art/full-bleed-random.png`"
 
 Tree-Dye is an application and library for generating random art like the images
 you see above.  These images are generated using random spanning trees, and are
 perhaps vaguely reminiscent of [tie-dye][].
+
+[tie-dye]: https://en.wikipedia.org/wiki/Tie-dye
 
 ## Table of contents
 
@@ -69,35 +78,40 @@ Available options:
 Tree-Dye was inspired by a conversation with [Michael Klein][] at ICFP 2017.
 Thanks, Michael!
 
+[Michael Klein]: https://github.com/michaeljklein
+
 ## References
 
 * The random spanning tree generation algorithm is the `RandomTreeWithRoot`
   algorithm (Figure 1) from [“Generating Random Spanning Trees More Quickly than
-  the Cover Time”][Wilson-RandomSpanningTrees], by David Bruce Wilson, in ACM
-  Symposium on the Theory of Computing (STOC) 1996.  It uniformly randomly
-  generates a spanning tree using loop-erased random walks.
+  the Cover Time”][], by David Bruce Wilson, in ACM Symposium on the Theory of
+  Computing (STOC) 1996.  It uniformly randomly generates a spanning tree using
+  loop-erased random walks.
 
 * Random spanning tree generation is the same problem as maze generation, and I
   found various web pages on the subject very helpful:
   
-  - [“Visualizing Algorithms”][Bostock-Visualizing], by Mike Bostock, June 26,
-    2014; in particular, the [“Maze Generation”][Bostock-Visualizing-Mazes]
-    section.  This section presents various maze/random spanning tree generation
-    algorithms, and visualizes them using a rainbow colorization corresponding
-    to depth.  It even includes the “tie-dye” analogy!
+  - [“Visualizing Algorithms”][], by Mike Bostock, June 26, 2014; in particular,
+    the [“Maze Generation”][] section.  This section presents various
+    maze/random spanning tree generation algorithms, and visualizes them using a
+    rainbow colorization corresponding to depth.  It even includes the “tie-dye”
+    analogy!
   
-  - The slides from [“Algorithm” is Not a Four-Letter
-    Word][Buck-MazeGenerationSlides], Jamis Buck's RubyConf 2011 presentation,
-    which explain various different maze generation algorithms; relatedly,
-    Buck's post [“Maze Generation: Algorithm Recap”][Buck-MazeGeneration] on his
-    blog [The Buckblog][] from February 7, 2011, which expands on some of the
-    same algorithms as the presentation.
+  - [The slides from “Algorithm” is Not a Four-Letter Word][], Jamis Buck's
+    RubyConf 2011 presentation, which explain various different maze generation
+    algorithms; relatedly, Buck's post [“Maze Generation: Algorithm Recap”][] on
+    his blog [The Buckblog][] from February 7, 2011, which expands on some of
+    the same algorithms as the presentation.
 
-[tie-dye]:                    https://en.wikipedia.org/wiki/Tie-dye
-[Michael Klein]:              https://github.com/michaeljklein
-[Wilson-RandomSpanningTrees]: https://www.cs.cmu.edu/~15859n/RelatedWork/RandomTrees-Wilson.pdf
-[Bostock-Visualizing]:        https://bost.ocks.org/mike/algorithms/
-[Bostock-Visualizing-Mazes]:  https://bost.ocks.org/mike/algorithms/#maze-generation
-[Buck-MazeGenerationSlides]:  http://www.jamisbuck.org/presentations/rubyconf2011/index.html
-[Buck-MazeGeneration]:        http://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap
-[The Buckblog]:               http://weblog.jamisbuck.org
+[“Generating Random Spanning Trees More Quickly than the Cover Time”]:
+  https://www.cs.cmu.edu/~15859n/RelatedWork/RandomTrees-Wilson.pdf
+[“Visualizing Algorithms”]:
+  https://bost.ocks.org/mike/algorithms/
+[“Maze Generation”]:
+  https://bost.ocks.org/mike/algorithms/#maze-generation
+[The slides from “Algorithm” is Not a Four-Letter Word]:
+  http://www.jamisbuck.org/presentations/rubyconf2011/index.html
+[“Maze Generation: Algorithm Recap”]:
+  http://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap
+[The Buckblog]:
+  http://weblog.jamisbuck.org
