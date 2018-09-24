@@ -6,6 +6,14 @@ Tree-Dye is an application and library for generating random art like the image
 you see above.  These images are generated using random spanning trees, and are
 perhaps vaguely reminiscent of [tie-dye][].
 
+## Table of contents
+
+1. [Tree-Dye](#tree-dye)
+2. [Table of contents](#table-of-contents)
+3. [Documentation](#documentation)
+4. [Acknowledgments](#acknowledgments)
+5. [References](#references)
+
 ![A green and blue spanning tree image covering the whole canvas](README-art/full-bleed-random.png "Generated with `tree-dye -w800 -hx -m -B README-art/full-bleed-random.png` after 4 tries")
 
 ## Documentation
