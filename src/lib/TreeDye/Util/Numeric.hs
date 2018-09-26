@@ -83,8 +83,8 @@ fromIntegerBounded n
 -- >>> fromNaturalBounded @Int8 128
 -- Nothing
 --
--- Note that this function will not behave correctly for any type for which @0 <
--- 'minBound'@!
+-- Note that this function will not behave correctly for any type for which
+-- @'minBound' < 0@!
 fromNaturalBounded :: forall a. (Integral a, Bounded a) => Natural -> Maybe a
 fromNaturalBounded n
   | n <= fromIntegral (maxBound @a)
