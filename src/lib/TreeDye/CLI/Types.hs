@@ -122,7 +122,7 @@ prettyDefault = showDefaultWith cliPretty
 
 instance CLIPretty Color where
   cliPretty (FixedColor c) =
-    maybe (sRGB24show c) fst $ find ((== c) . snd) colourNames
+    maybe (sRGB24show c) fst $ find ((== c) . snd) colourNameList
   cliPretty RandomColor =
     "random"
 

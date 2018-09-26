@@ -8,20 +8,40 @@ Maintainer  : Antal Spector-Zabusky <antal.b.sz@gmail.com>
 Utilities for working with 'Colour's.
 -}
 
-module TreeDye.Util.Colour (colourNames) where
+module TreeDye.Util.Colour (namedColours, colourNameList) where
 
 import Prelude hiding (tan)
+
+import Data.Map (Map)
+import qualified Data.Map as M
+
 import Data.Colour
 import Data.Colour.Names
 
--- |An association list mapping color names to the corresponding 'Colour'.  The
--- reified form of 'Data.Colour.Names.readColourName'.
+-- |A 'Map' from color names to the corresponding 'Colour' values.  The reified
+-- form of 'Data.Colour.Names.readColourName'.
 --
--- > lookup name colourNames == readColourName name
+-- > Data.Map.lookup name namedColours == readColourName name
+--
+-- We can't have a 'Map' that goes the other way, because 'Colour's are not
+-- 'Ord'erable – instead, see 'colourNameList'.
 --
 -- This is a polymorphic constant, but has a specialization to @Colour Double@.
-colourNames :: (Ord a, Floating a) => [(String, Colour a)]
-colourNames = 
+namedColours :: (Ord a, Floating a) => Map String (Colour a)
+namedColours = M.fromDistinctAscList colourNameList
+{-# SPECIALIZE namedColours :: Map String (Colour Double) #-}
+
+-- |An association list mapping color names to the corresponding 'Colour'
+-- values.  The reified form of 'Data.Colour.Names.readColourName'.
+--
+-- > lookup name colourNameList == readColourName name
+--
+-- If all you need to do is go from a color name to a 'Colour', use
+-- 'namedColours' instead.
+--
+-- This is a polymorphic constant, but has a specialization to @Colour Double@.
+colourNameList :: (Ord a, Floating a) => [(String, Colour a)]
+colourNameList =
   [ ("aliceblue",            aliceblue)
   , ("antiquewhite",         antiquewhite)
   , ("aqua",                 aqua)
@@ -169,4 +189,4 @@ colourNames =
   , ("whitesmoke",           whitesmoke)
   , ("yellow",               yellow)
   , ("yellowgreen",          yellowgreen) ]
-{-# SPECIALIZE colourNames :: [(String, Colour Double)] #-}
+{-# SPECIALIZE colourNameList :: [(String, Colour Double)] #-}
